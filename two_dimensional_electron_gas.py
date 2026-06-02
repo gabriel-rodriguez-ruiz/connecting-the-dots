@@ -212,13 +212,14 @@ class TwoDimensionalElectronGas():
                                self.get_Energies_in_polars(
                                np.linspace(k_values[root_index[i]],
                                            k_values[root_index[i+1]],
-                                           N),
+                                           N, endpoint=False),
                                [theta_value], phi_x, phi_y)[:,0,
                                                     indeces]),
                                                axis=0)
             extended_k_values = np.concatenate((extended_k_values,
                                     np.linspace(k_values[root_index[i]],
-                                        k_values[root_index[i+1]], N)
+                                        k_values[root_index[i+1]], N,
+                                        endpoint=False)
                                     ))
         extended_Energies = np.concatenate((extended_Energies,
                                             Energies[root_index[-1]:,:]))

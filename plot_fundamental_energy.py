@@ -12,7 +12,7 @@ from pathlib import Path
 
 data_folder = Path(r"./Data")
 
-file_to_open = data_folder / "total_fundamental_energy_B=0.16_phi_x_in_(-0.0-0.0)_Delta=0.08_lambda=22.5_points=19.npz"
+file_to_open = data_folder / "total_fundamental_energy_B=0.08800000000000001_phi_x_in_(-0.0001-0.0001)_Delta=0.08_lambda=150_points=15.npz"
 
 Data = np.load(file_to_open)
 # fundamental_energy = Data["fundamental_energy"]

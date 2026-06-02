@@ -25,14 +25,14 @@ mu_B = 5.788e-2 # meV/TT
 Delta =  0.08 #0.08 #0.08  #2*0.122 # 0.08 #0.08   #  meVs
 mu = E_F  # 623 Delta #50.6  #  meV
 Lambda = 15  #15 #187*Delta/2 # meV*nm    # 8 * Delta  #0.644 meV 
-theta = 0   #np.pi/2
+theta = np.pi/2   #np.pi/2
 
 B = 3*Delta       #1.1*Delta   #0.28*Delta
 B_x = B * np.cos(theta)
-B_y = B/2 * np.sin(theta)
+B_y = B * np.sin(theta)
 
 q_B_constant = 0 #0.024/8
-phi_x = 0 #q_B_constant * B  #0.0004  #0.024 * 0.5 * Delta
+phi_x = 0 #1/2*B/gamma/k_F #q_B_constant * B  #0.0004  #0.024 * 0.5 * Delta
 phi_y = 0
 
 k_values = np.linspace(0.9*k_F, 1.1*k_F, 300)
