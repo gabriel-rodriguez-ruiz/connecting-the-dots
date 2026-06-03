@@ -27,14 +27,14 @@ mu = E_F  # 623 Delta #50.6  #  meV
 Lambda = 15  #15 #187*Delta/2 # meV*nm    # 8 * Delta  #0.644 meV 
 theta = np.pi/2
 
-B = 1.1*Delta   #0.28*Delta
+B = 3*Delta   #0.28*Delta
 B_x = B * np.cos(theta)
 B_y = B * np.sin(theta)
 
 q_B_constant = 0 #0.024/8
-phi_x = -B/(2*gamma*k_F)+1e-5   #-Lambda*B/(4*gamma**2*k_F**2) #Lambda*B/(4*gamma**2*k_F**2) #-1/2*B/gamma/k_F #q_B_constant * B  #0.0004  #0.024 * 0.5 * Delta
+phi_x = -2*B/(2*gamma*k_F) #Lambda*B/(4*gamma**2*k_F**2) #-1/2*B/gamma/k_F #q_B_constant * B  #0.0004  #0.024 * 0.5 * Delta
 phi_y = 0
-N = 1
+N = 100
 # k_values = np.linspace(0.9*k_F, 1.1*k_F, 200)
 k_1 = (-Lambda + np.sqrt(Lambda**2 
                              + 4*gamma*mu)) / (2*gamma)
@@ -85,14 +85,15 @@ for i,theta in enumerate(theta_values):
                                     phi_x, phi_y, N)
     ax.scatter(roots/Electron_Gas.k_F, np.zeros_like(roots))
     # ax.plot(extended_k_values/Electron_Gas.k_F, np.abs(extended_Energies))
-    ax.plot(extended_k_values/Electron_Gas.k_F, extended_Energies, "v")
+    ax.plot(extended_k_values/Electron_Gas.k_F, extended_Energies, "v",
+            markersize=3, zorder=1)
 
 k_1 = (-Lambda + np.sqrt(Lambda**2 + 4*gamma*mu)) / (2*gamma)
 k_2 = (Lambda + np.sqrt(Lambda**2 + 4*gamma*mu)) / (2*gamma)
 
 ax.scatter([k_1/k_F, k_2/k_F], [0, 0])
 for i in range(4):
-    ax.plot(k_values/k_F, Energies[:, 0, i], "o")
+    ax.plot(k_values/k_F, Energies[:, 0, i], "o", zorder=0)
     
 ax.scatter(k_values[root_index]/k_F, np.zeros_like(root_index), marker="*")
 plt.grid()

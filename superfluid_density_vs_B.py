@@ -39,20 +39,21 @@ k_1 = (-Lambda + np.sqrt(Lambda**2
 k_2 = (Lambda + np.sqrt(Lambda**2
                              + 4*gamma*mu)) / (2*gamma)
 M = 100
-k_values = [np.linspace(0*k_F, 0.99*k_1, M, endpoint=False),
+k_values = [np.linspace(0*k_F, 0.99*k_1, M, endpoint=False), # this M value is irrelevant
             np.append(np.linspace(0.99*k_1, 1.01*k_1, M, endpoint=False),
                      [np.linspace(1.01*k_1, 0.99*k_2, M, endpoint=False),
                       np.linspace(0.99*k_2, 1.01*k_2, M, endpoint=False)]),
-            np.linspace(1.01*k_2, cut_off, M)]
+            np.linspace(1.01*k_2, cut_off, M)]  # this M value is irrelevant
 
 theta_values = np.linspace(0, 2*np.pi, 100)
 N = 100
 n_cores = 15
 points = 1 * n_cores
 
-T = False
+T = True
 beta = 100
 
+minimization = False
 n_calls = 10  #15
 n_initial_points = 2  #5
 
@@ -64,12 +65,15 @@ parameters = {"gamma": gamma, "points": points, "k_F": k_F,
               }
 
 def function(phi_x, Electron_Gas):
-    energy_phi_2DEG = Electron_Gas.get_fundamental_energy(k_values,
-                                  theta_values, phi_x, phi_y, N)
-    energy_phi_x = (1/2 * energy_phi_2DEG
-    +  np.pi/2 * cut_off**2 *
-    (2*gamma*(phi_x)**2 - 2*mu + gamma*cut_off**2) )
-    return energy_phi_x
+    if T==False:
+        energy_phi_2DEG = Electron_Gas.get_fundamental_energy(k_values,
+                                      theta_values, phi_x, phi_y, N)
+    else:
+        energy_phi_2DEG = Electron_Gas.get_grand_potential(k_values,
+                                      theta_values, phi_x, phi_y, N, beta)
+    fundamental_energy_2DEG = (1/2 * energy_phi_2DEG
+    +  np.pi/2 * cut_off**2 * (2*gamma*(phi_x)**2 - 2*mu + gamma*cut_off**2) )
+    return fundamental_energy_2DEG
 
 def get_minima(search_space, initial_points, Electron_Gas):
     def objective_function(x):
@@ -105,7 +109,10 @@ def integrate_B(B):
     
     Electron_Gas = TwoDimensionalElectronGas(mu, Delta, B_x, B_y, gamma,
                                              Lambda)
-    phi_x = get_minima(search_space, initial_points, Electron_Gas)   #-np.heaviside(B-Delta, 1)*B/(2*gamma*k_F) - np.heaviside(Delta-B, 0)*Lambda*B/(4*gamma**2*k_F**2)
+    if minimization==True:
+        phi_x = get_minima(search_space, initial_points, Electron_Gas)   #-np.heaviside(B-Delta, 1)*B/(2*gamma*k_F) - np.heaviside(Delta-B, 0)*Lambda*B/(4*gamma**2*k_F**2)
+    else:
+        phi_x = 0
     print(phi_x)
     phi_y = 0
 

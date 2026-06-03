@@ -43,22 +43,26 @@ class TwoDimensionalElectronGas():
         r"""Return the 2DEG Hamiltonian matrix for a given k.
         
         .. math ::
-            H = \frac{1}{2} \Biggl\{ \biggl(\gamma \left[ ( k_x
+            H_k =  \biggl(\gamma \left[ ( k_x
                                                 + \phi_x )^2 
-                                                + k_y^2 \right]
+                                                + (k_y
+                                + \phi_y)^2 \right]
                 - \mu \biggr) \frac{\tau_0 + \tau_z}{2} \sigma_0
                 - \biggl(\gamma \left[ ( -k_x + \phi_x )^2 
-                                                    + k_y^2 \right]
+                              + (-k_y + \phi_y)^2 \right]
                     - \mu \biggr) \frac{\tau_0 - \tau_z}{2} \sigma_0\\
                 - B_x \tau_0 \sigma_x
                 - B_y \tau_0 \sigma_y
                 - \Delta \tau_x \sigma_0
                 + \lambda (k_x + \phi_x) \frac{\tau_0
-                                               + \tau_z}{2}\sigma_0
+                                               + \tau_z}{2}\sigma_y
                 + \lambda (-k_x + \phi_x) \frac{\tau_0
-                                    - \tau_z}{2} \sigma_0 \\
-                - \lambda k_y \tau_z\sigma_x
-                \Biggr\}
+                                    - \tau_z}{2} \sigma_y \\
+                - \lambda (k_y + \phi_y) \frac{\tau_0
+                                               + \tau_z}{2}\sigma_x
+                - \lambda (-k_y + \phi_y) \frac{\tau_0
+                                    - \tau_z}{2} \sigma_x
+                
                 
         Parameters
         ----------
@@ -186,8 +190,8 @@ class TwoDimensionalElectronGas():
             return swaps
         root_index = []
         N_index = 5
-        extended_Energies = np.zeros((0, 4))
-        extended_k_values = np.zeros(0)
+        extended_Energies = Energies #np.zeros((0, 4))
+        extended_k_values = k_values  #np.zeros(0)
         roots = self.find_radial_energy_roots(Energies, k_values)
         k_1 = (-self.Lambda + np.sqrt(self.Lambda**2 
                                      + 4*self.gamma*self.mu)) / (2*self.gamma)
@@ -280,9 +284,12 @@ class TwoDimensionalElectronGas():
         """Integration in k.
         """
         low_radius_values, radius_values_k_F, high_radius_values = k_values
-        low_integral = np.zeros(2)
-        for i in range(2):
-            f = lambda r: ( r * (self.get_Energies_in_polars([r],
+        low_integral = np.zeros(4)
+        for i in range(4):
+            f = lambda r: ( r * self.Fermi_function(
+                self.get_Energies_in_polars([r],
+                    [theta_value], phi_x, phi_y)[0][0][i], beta) *
+                           (self.get_Energies_in_polars([r],
                     [theta_value], phi_x+h, phi_y)[0][0][i] 
                                  - self.get_Energies_in_polars([r],
                                      [theta_value], phi_x-h, phi_y)[0][0][i])
@@ -314,9 +321,12 @@ class TwoDimensionalElectronGas():
                 ,
                 extended_k_values, axis=0,
                 dx=np.diff(extended_k_values)[0])
-        high_integral = np.zeros(2)
-        for i in range(2):
-            f = lambda r: ( r * (self.get_Energies_in_polars([r],
+        high_integral = np.zeros(4)
+        for i in range(4):
+            f = lambda r: ( r * self.Fermi_function(
+                self.get_Energies_in_polars([r],
+                    [theta_value], phi_x, phi_y)[0][0][i], beta) *
+                           (self.get_Energies_in_polars([r],
                     [theta_value], phi_x+h, phi_y)[0][0][i] 
                                  - self.get_Energies_in_polars([r],
                                      [theta_value], phi_x-h, phi_y)[0][0][i])
@@ -330,9 +340,12 @@ class TwoDimensionalElectronGas():
         """Integration in k.
         """
         low_radius_values, radius_values_k_F, high_radius_values = k_values
-        low_integral = np.zeros(2)
-        for i in range(2):
-            f = lambda r: ( r * (self.get_Energies_in_polars([r],
+        low_integral = np.zeros(4)
+        for i in range(4):
+            f = lambda r: ( r * self.Fermi_function(
+                self.get_Energies_in_polars([r],
+                    [theta_value], phi_x, phi_y)[0][0][i], beta) * 
+                           (self.get_Energies_in_polars([r],
                     [theta_value], phi_x, phi_y+h)[0][0][i] 
                                  - self.get_Energies_in_polars([r],
                                      [theta_value], phi_x, phi_y-h)[0][0][i])
@@ -364,9 +377,12 @@ class TwoDimensionalElectronGas():
                 ,
                 extended_k_values, axis=0,
                 dx=np.diff(extended_k_values)[0])
-        high_integral = np.zeros(2)
-        for i in range(2):
-            f = lambda r: ( r * (self.get_Energies_in_polars([r],
+        high_integral = np.zeros(4)
+        for i in range(4):
+            f = lambda r: ( r * self.Fermi_function(
+                self.get_Energies_in_polars([r],
+                    [theta_value], phi_x, phi_y)[0][0][i], beta) *
+                           (self.get_Energies_in_polars([r],
                     [theta_value], phi_x, phi_y+h)[0][0][i] 
                                  - self.get_Energies_in_polars([r],
                                      [theta_value], phi_x, phi_y-h)[0][0][i])
@@ -385,11 +401,68 @@ class TwoDimensionalElectronGas():
                                   + np.sum(high_integral))
         fundamental_energy = scipy.integrate.trapezoid(
             radial_integral,
-            theta_values, axis=0,
-            dx=np.diff(theta_values)[0])
+            theta_values, axis=0)
         return fundamental_energy
     def Fermi_function(self, energy, beta):
         return 1 / (1 + np.exp(beta * energy))
+    def get_radial_integral_for_grand_potential(self, k_values, theta_value,
+                                                phi_x, phi_y, N, beta):
+        """Integration in k.
+        """
+        low_radius_values, radius_values_k_F, high_radius_values = k_values
+        low_integral = np.zeros(4)
+        for i in range(4):
+            f = lambda r: ( r * self.Fermi_function(
+                self.get_Energies_in_polars([r],
+                    [theta_value], phi_x, phi_y)[0][0][i], beta) *
+                           self.get_Energies_in_polars([r],
+                    [theta_value], phi_x, phi_y)[0][0][i] )
+            low_integral[i], abserr = scipy.integrate.quad(f, 0,
+                                      np.max(low_radius_values))
+        Energies_k_F = self.get_Energies_in_polars(radius_values_k_F,
+                                                   [theta_value],
+                                                   phi_x, phi_y)
+        extended_Energies, extended_k_values, roots = self.\
+                        get_interpolation_of_energy(Energies_k_F[:, 0, :],
+                                                    radius_values_k_F, 
+                                                    theta_value,
+                                        phi_x, phi_y, N)
+        integral = np.zeros(4)
+        for i in range(4):
+            integral[i] = scipy.integrate.trapezoid(
+                extended_k_values * (-1/(beta)) *   # (-1/(2*beta))
+                np.where(-beta * extended_Energies[:, i]>0,
+                         -beta * extended_Energies[:, i] +
+                         np.log(1 +
+                             np.exp(beta * extended_Energies[:, i] )),
+                         np.log(1 +
+                             np.exp(-beta * extended_Energies[:, i] ))),
+                extended_k_values, axis=0)
+        high_integral = np.zeros(2)
+        for i in range(4):
+            f = lambda r: ( r * self.Fermi_function(
+                self.get_Energies_in_polars([r],
+                    [theta_value], phi_x, phi_y)[0][0][i], beta) *
+                           self.get_Energies_in_polars([r],
+                    [theta_value], phi_x, phi_y)[0][0][i] )
+            high_integral[i], abserr = scipy.integrate.quad(f,
+                                      np.max(extended_k_values),
+                                      np.max(high_radius_values))
+        return low_integral, integral, high_integral
+    def get_grand_potential(self, k_values, theta_values, phi_x, phi_y,
+                               N, beta):
+        radial_integral = np.zeros_like(theta_values)
+        for i, theta in enumerate(theta_values):
+            low_integral, integral, high_integral = \
+            self.get_radial_integral_for_grand_potential(
+            k_values, theta, phi_x, phi_y, N, beta)
+            radial_integral[i] = (np.sum(low_integral) + np.sum(integral)
+                                  + np.sum(high_integral))
+        grand_potential = scipy.integrate.trapezoid(
+            radial_integral,    
+            theta_values, axis=0,
+            dx=np.diff(theta_values)[0])
+        return grand_potential
     def get_current_in_x(self, k_values, theta_values, phi_x, phi_y, N, h,
                          T, beta):
         if T==False:
@@ -398,7 +471,7 @@ class TwoDimensionalElectronGas():
                                      theta_values, phi_x + h, phi_y, N)
             fundamental_energy[1] = self.get_fundamental_energy(k_values,
                                      theta_values, phi_x - h, phi_y, N)   
-            current = 1/2*(fundamental_energy[0] - fundamental_energy[1]
+            current = 1/2 * (fundamental_energy[0] - fundamental_energy[1]
                            )/ (2*h)
         else:
             radial_integral = np.zeros_like(theta_values)
@@ -410,8 +483,7 @@ class TwoDimensionalElectronGas():
                                       + np.sum(high_integral))
             current = 1/2 * scipy.integrate.trapezoid(
                 radial_integral,
-                theta_values, axis=0,
-                dx=np.diff(theta_values)[0])
+                theta_values, axis=0)
         return current
     def get_current_in_y(self, k_values, theta_values, phi_x, phi_y, N, h,
                          T, beta):
@@ -433,8 +505,7 @@ class TwoDimensionalElectronGas():
                                       + np.sum(high_integral))
             current = 1/2 * scipy.integrate.trapezoid(
                 radial_integral,
-                theta_values, axis=0,
-                dx=np.diff(theta_values)[0])
+                theta_values, axis=0)
         return current
     def get_density_radial_integral(self, k_values, theta_value, phi_x,
                                     phi_y, N, T, beta):
@@ -460,14 +531,12 @@ class TwoDimensionalElectronGas():
                 integral[i] = scipy.integrate.trapezoid(
                     extended_k_values * (1/2)
                     * self.Fermi_function(extended_Energies[:, i], beta),
-                    extended_k_values, axis=0,
-                    dx=np.diff(extended_k_values)[0])
+                    extended_k_values, axis=0)
             else:
                 integral[i] = scipy.integrate.trapezoid(
                     extended_k_values * (1/2)
                     * np.heaviside(extended_Energies[:, i], 1),
-                    extended_k_values, axis=0,
-                    dx=np.diff(extended_k_values)[0])
+                    extended_k_values, axis=0)
         high_integral = np.zeros(2)
         for i in range(2):
             f = lambda r: ( r * 1 )

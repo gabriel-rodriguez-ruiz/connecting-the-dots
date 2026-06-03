@@ -26,11 +26,11 @@ mu_B = 5.788e-2 # meV/TT
 
 Delta =  0.08 #0.08  #2*0.122 # 0.08 #0.08   #  meVs
 mu = E_F  # 623 Delta #50.6  #  meV
-Lambda = 10  #15 #187*Delta/2 # meV*nm    # 8 * Delta  #0.644 meV 
+Lambda = 15  #15 #187*Delta/2 # meV*nm    # 8 * Delta  #0.644 meV 
 theta = np.pi/2
 cut_off = 2 * k_F # 1.1 k_F
 
-B = 2*Delta   #0.28*Delta
+B = 1.1*Delta   #0.28*Delta
 B_x = B * np.cos(theta)
 B_y = B * np.sin(theta)
 
@@ -48,16 +48,23 @@ k_values = [np.linspace(0*k_F, 0.995*k_1, 100, endpoint=False),
                       np.linspace(0.995*k_2, 1.005*k_2, 100, endpoint=False)]),
             np.linspace(1.005*k_2, cut_off, 100)]
 
-theta_values = np.linspace(0, 2*np.pi, 200)
+theta_values = np.linspace(0, 2*np.pi, 100)
 N = 100
 n_cores = 15
 points = 1 * n_cores
 
+T = True
+beta = 25
+
 Electron_Gas = TwoDimensionalElectronGas(mu, Delta, B_x, B_y, gamma, Lambda)
 
 def integrate_phi_x(phi_x):
-    energy_phi_2DEG = Electron_Gas.get_fundamental_energy(k_values,
-                                  theta_values, phi_x, phi_y, N)
+    if T==False:
+        energy_phi_2DEG = Electron_Gas.get_fundamental_energy(k_values,
+                                      theta_values, phi_x, phi_y, N)
+    else:
+        energy_phi_2DEG = Electron_Gas.get_grand_potential(k_values,
+                                      theta_values, phi_x, phi_y, N, beta)
     fundamental_energy_2DEG = (1/2 * energy_phi_2DEG
     +  np.pi/2 * cut_off**2 * (2*gamma*(phi_x)**2 - 2*mu + gamma*cut_off**2) )
     return fundamental_energy_2DEG
@@ -74,13 +81,13 @@ def integrate_phi_y(phi_y):
 #%%
 
 if __name__ == "__main__":
-    phi_x_values = np.linspace(-0.0001, 0.0001, points)
+    phi_x_values = np.linspace(-0.0002, 0.0002, points)
     integrate = integrate_phi_x   # integrate_phi_x
     with multiprocessing.Pool(n_cores) as pool:
         fundamental_energy_2DEG = pool.map(integrate, phi_x_values)
     fundamental_energy_2DEG = np.array(fundamental_energy_2DEG)
     data_folder = Path("Data/")
-    name = f"total_fundamental_energy_B={B}_phi_x_in_({np.round(np.min(phi_x_values), 7)}-{np.round(np.max(phi_x_values),7)})_Delta={Electron_Gas.Delta}_lambda={np.round(Lambda, 2)}_points={points}.npz"
+    name = f"total_fundamental_energy_B={B}_phi_x_in_({np.round(np.min(phi_x_values), 7)}-{np.round(np.max(phi_x_values),7)})_Delta={Electron_Gas.Delta}_lambda={np.round(Lambda, 2)}_points={points}_T={T}_beta={beta}.npz"
     file_to_open = data_folder / name
     np.savez(file_to_open,
              fundamental_energy_2DEG=fundamental_energy_2DEG,
