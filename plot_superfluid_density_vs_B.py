@@ -16,7 +16,7 @@ plt.rcParams.update({
 
 data_folder = Path(r"./Data")
 
-file_to_open = data_folder / "superfluid_density_B_in_1.6_(0.1-3.0)_Delta=0.08_lambda=15_points=15_N=300_h=0.0001_T=True_beta=100.npz"
+file_to_open = data_folder / "superfluid_density_B_in_1.6_(0.1-3.0)_Delta=0.08_lambda=15_points=15_N=100_h=1e-05_T=True_beta=100.npz"
 
 Data = np.load(file_to_open)
 B_values = Data["B_values"]

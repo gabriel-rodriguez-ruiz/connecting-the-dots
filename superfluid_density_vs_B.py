@@ -45,7 +45,7 @@ k_values = [np.linspace(0*k_F, 0.99*k_1, M, endpoint=False), # this M value is i
                       np.linspace(0.99*k_2, 1.01*k_2, M, endpoint=False)]),
             np.linspace(1.01*k_2, cut_off, M)]  # this M value is irrelevant
 
-theta_values = np.linspace(0, 2*np.pi, 100)
+theta_values = np.linspace(0, 2*np.pi, 200)
 N = 100
 n_cores = 15
 points = 1 * n_cores
